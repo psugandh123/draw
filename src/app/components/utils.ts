@@ -13,12 +13,21 @@ export const getNextPointName = (numPoints: number): string => {
         return `${nextChar}'`;
     }
 };
+export type InteractionEvent = React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>;
 
-
-export const getCoordinates = (e: React.MouseEvent<HTMLDivElement>) => {
+const getClient = (e: InteractionEvent) => {
     const canvasRect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - canvasRect.left;
-    const y = e.clientY - canvasRect.top;
+    return 'changedTouches' in e ? e.changedTouches[0] : e
+
+}
+export const getCoordinates = (e: InteractionEvent) => {
+    const canvasRect = e.currentTarget.getBoundingClientRect();
+    const { clientX, clientY } = getClient(e);
+
+
+    const x = clientX - canvasRect.left;
+    const y = clientY - canvasRect.top;
+    console.log(x, x / GRID_LENGTH - 0.5, Math.round((x / GRID_LENGTH - 0.5)))
 
     return {
         relative: {
@@ -29,4 +38,16 @@ export const getCoordinates = (e: React.MouseEvent<HTMLDivElement>) => {
             y: (Math.round((y / GRID_LENGTH - 0.5)) + 0.5) * GRID_LENGTH,
         }
     }
+}
+
+export const isActionWIthinCanvas = (e: InteractionEvent) => {
+    const canvasRect = e.currentTarget.getBoundingClientRect();
+    const { clientX, clientY } = getClient(e);
+
+
+
+    return clientX >= canvasRect.left &&
+        clientX <= canvasRect.right &&
+        clientY >= canvasRect.top &&
+        clientY <= canvasRect.bottom
 }

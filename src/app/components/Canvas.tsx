@@ -4,7 +4,7 @@ import { GRID_LENGTH, GRID_POINT_RADIUS, TOOLS } from './constants';
 import Line from './Line';
 import Point from './Point';
 import Toolpanel from './Toolpanel';
-import { getCoordinates, getNextPointName } from './utils';
+import { getCoordinates, getNextPointName, InteractionEvent, isActionWIthinCanvas } from './utils';
 
 export interface Node {
     id: string;
@@ -30,6 +30,8 @@ type Action =
     | { type: 'UPSERT_NODE'; node: Node }
     | { type: 'UPDATE_ACTIVE_NODE'; node: Partial<Node> }
     | { type: 'REMOVE_ACTIVE_NODE' }
+    | { type: 'REMOVE_ACTIVE_NODE_LINK' }
+
 
     | { type: 'SET_START_NODE'; nodeId: string | null }
     | { type: 'SET_IS_DRAGGING'; isDragging: boolean }
@@ -77,6 +79,13 @@ const reducer = (state: State, action: Action): State => {
             return {
                 ...state, activeNode: null
             };
+        case 'REMOVE_ACTIVE_NODE_LINK':
+            return {
+                ...state,
+                activeNode: null,
+                links: state.links?.filter
+                    (link => !(link.startNodeId === state.activeNode?.id || link.endNodeId === state.activeNode?.id))
+            };
         case 'SET_START_NODE':
             return { ...state, startNodeId: action.nodeId };
         case 'SET_IS_DRAGGING':
@@ -99,42 +108,39 @@ const Canvas: React.FC = () => {
     });
 
 
-    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-        // Get the canvas dimensions
+    const handleMouseDown = (e: InteractionEvent) => {
         if (currentTool !== TOOLS.LINE) {
             return;
         }
-        const canvasRect = e.currentTarget.getBoundingClientRect();
 
         // Check if the mouse click is within the canvas
-        if (
-            e.clientX >= canvasRect.left &&
-            e.clientX <= canvasRect.right &&
-            e.clientY >= canvasRect.top &&
-            e.clientY <= canvasRect.bottom
-        ) {
-            dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
-            const { closest } = getCoordinates(e);
-            const existingNode = Object.values(state.nodes).find(
-                (node) => node.x === closest.x && node.y === closest.y
-            );
+        if (!isActionWIthinCanvas(e)) {
+            return
+        }
 
-            if (existingNode) {
-                // Set the existing node as the active node
-                dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
-            } else {
-                // Create a new node and set it as the start node
-                const newNodeId = getNextPointName(Object.values(state.nodes).length); // Implement a function to get the next point name
-                dispatch({
-                    type: 'UPSERT_NODE',
-                    node: { id: newNodeId, x: closest.x, y: closest.y },
-                });
-                dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
-            }
+        dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
+        const { closest } = getCoordinates(e);
+        const existingNode = Object.values(state.nodes).find(
+            (node) => node.x === closest.x && node.y === closest.y
+        );
+
+        if (existingNode) {
+            dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
+        } else {
+            const newNodeId = getNextPointName(Object.values(state.nodes).length);
+            dispatch({
+                type: 'UPSERT_NODE',
+                node: { id: newNodeId, x: closest.x, y: closest.y },
+            });
+            dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
         }
     };
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleMouseMove = (e: InteractionEvent) => {
+        if (!isActionWIthinCanvas(e)) {
+            return
+        }
+
 
 
         if (state.isDragging) {
@@ -169,9 +175,17 @@ const Canvas: React.FC = () => {
         }
     };
 
-    const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-        // Handle mouse up event
+    const handleMouseUp = (e: InteractionEvent) => {
         dispatch({ type: 'SET_IS_DRAGGING', isDragging: false });
+
+        if (!isActionWIthinCanvas(e)) {
+
+            dispatch({ type: "REMOVE_ACTIVE_NODE_LINK" });
+
+            return
+        }
+
+
 
         if (state.activeNode) {
             const { closest } = getCoordinates(e);
@@ -194,11 +208,12 @@ const Canvas: React.FC = () => {
     };
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
+    console.log(state.nodes)
     return (
         <div className="flex justify-center flex-col items-center" onClick={() => {
             setCurrentTool("")
         }}>
-            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px]' onClick={(e) => {
+            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] touch-none' onClick={(e) => {
                 e.stopPropagation()
             }}>
                 <div
@@ -206,6 +221,9 @@ const Canvas: React.FC = () => {
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
+                    onTouchStart={handleMouseDown}
+                    onTouchMove={handleMouseMove}
+                    onTouchEndCapture={handleMouseUp}
 
                     style={{
                         backgroundImage:
