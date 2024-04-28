@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Geometry Pad",
+  title: "GeometryPad",
   description: "GeometryPad is an interactive canvas app designed for creating and manipulating geometric constructions.",
 };
 
