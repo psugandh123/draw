@@ -222,7 +222,7 @@ const Canvas: React.FC = () => {
                             {associatedLinks.length > 1 ?
                                 associatedLinks.map((linkA, index1) =>
                                     associatedLinks.map((linkB, index2) => index1 < index2 ?
-                                        <Angle linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />
+                                        <Angle key={linkA?.id + linkB.id} linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />
                                         : null)) :
                                 null}
 
