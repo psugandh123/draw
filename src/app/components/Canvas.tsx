@@ -49,21 +49,20 @@ const reducer = (state: State, action: Action): State => {
                 nodes: { ...state.nodes, [action.node.id]: action.node },
             };
         case 'MERGE_POINTS':
-
+            //For merging, remove old point
             const newNodes = { ...state.nodes };
             delete newNodes[action.from];
+            //Remove old points with the new point in all the links. Remove links with same start and end points
 
+            const links = state.links?.map(link => ({
+                ...link,
+                startNodeId: link.startNodeId === action.from ? action.to : link.startNodeId,
+                endNodeId: link.endNodeId === action.from ? action.to : link.endNodeId,
+            })).filter
+                (link => link.startNodeId !== link.endNodeId)
             return {
                 ...state,
-                links: state.links?.filter
-                    (link =>
-                        !((link.startNodeId === action.from && link.endNodeId === action.to) ||
-                            (link.startNodeId === action.to && link.endNodeId === action.from)) && link.startNodeId !== link.endNodeId)
-                    .map(link => ({
-                        ...link,
-                        startNodeId: link.startNodeId === action.from ? action.to : link.startNodeId,
-                        endNodeId: link.endNodeId === action.from ? action.to : link.endNodeId,
-                    })),
+                links,
                 nodes: newNodes,
                 activeNode: null
             };
@@ -207,6 +206,8 @@ const Canvas: React.FC = () => {
 
 
     };
+
+    console.log(state.links)
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
     return (
