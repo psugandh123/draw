@@ -198,11 +198,11 @@ const Canvas: React.FC = () => {
         <div className="flex justify-center flex-col items-center" onClick={() => {
             setCurrentTool("")
         }}>
-            <div className='w-full space-y-4 max-w-[400px]' onClick={(e) => {
+            <div className='w-full gap-4 flex flex-col h-[100vh] max-w-[400px]' onClick={(e) => {
                 e.stopPropagation()
             }}>
                 <div
-                    className={`relative border border-gray-300  h-[500px] select-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
+                    className={`relative border border-gray-300 flex-grow select-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
