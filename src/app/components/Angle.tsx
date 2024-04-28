@@ -8,10 +8,11 @@ interface AngleProps {
     linkA: Link;
     linkB: Link;
     nodes: { [id: string]: Node };
-    currentNode: Node
+    currentNode: Node;
+    isDragging: boolean
 }
 
-const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
+const Angle = ({ linkA, linkB, nodes, currentNode, isDragging }: AngleProps) => {
 
 
     const [startNodeA, endNodeA] = linkA.startNodeId === currentNode.id ? [nodes[linkA.endNodeId], nodes[linkA.startNodeId]] : [nodes[linkA.startNodeId], nodes[linkA.endNodeId]]
@@ -44,7 +45,7 @@ const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
         return null;
     }
 
-    return <div className='group absolute' style={{
+    return <div className={`group absolute  ${isDragging ? "opacity-0" : "opacity-100"}`} style={{
         left: 0 - ANGLE_RADIUS + GRID_POINT_RADIUS * 4,
         top: 0 - ANGLE_RADIUS + GRID_POINT_RADIUS * 4,
     }} >

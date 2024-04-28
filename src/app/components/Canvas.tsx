@@ -250,13 +250,13 @@ const Canvas: React.FC = () => {
                     {Object.values(finalNodes).map((node) => {
                         const associatedLinks = state.links.filter(link => link.startNodeId === node.id || link.endNodeId === node.id)
                         return <Point
-                            isDragging={state.isDragging}
+
                             key={node.id}
                             node={node} >
                             {associatedLinks.length > 1 ?
                                 associatedLinks.map((linkA, index1) =>
                                     associatedLinks.map((linkB, index2) => index1 < index2 ?
-                                        <Angle key={linkA?.id + linkB.id} linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />
+                                        <Angle isDragging={state.isDragging} key={linkA?.id + linkB.id} linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />
                                         : null)) :
                                 null}
 
