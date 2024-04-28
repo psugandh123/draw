@@ -198,7 +198,7 @@ const Canvas: React.FC = () => {
         <div className="flex justify-center flex-col items-center" onClick={() => {
             setCurrentTool("")
         }}>
-            <div className='w-full gap-4 flex flex-col h-[100vh] max-w-[400px]' onClick={(e) => {
+            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px]' onClick={(e) => {
                 e.stopPropagation()
             }}>
                 <div
@@ -206,6 +206,7 @@ const Canvas: React.FC = () => {
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
+
                     style={{
                         backgroundImage:
                             `radial-gradient(#D9D9D9 ${GRID_POINT_RADIUS * 2}px, white 1px, white)`,
@@ -239,7 +240,7 @@ const Canvas: React.FC = () => {
                         />
                     ))}
                 </div>
-                <Toolpanel setCurrentTool={setCurrentTool} />
+                <Toolpanel setCurrentTool={setCurrentTool} currentTool={currentTool} />
             </div>
 
         </div>
