@@ -1,5 +1,5 @@
 import { link } from 'fs';
-import React, { useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import Angle from './Angle';
 import { GRID_LENGTH, GRID_POINT_RADIUS, TOOLS } from './constants';
 import Line from './Line';
@@ -108,133 +108,137 @@ const Canvas: React.FC = () => {
     });
 
 
-    const handleMouseDown = (e: InteractionEvent) => {
-        if (currentTool !== TOOLS.LINE) {
-            return;
-        }
-
-        // Check if the mouse click is within the canvas
-        if (!isActionWIthinCanvas(e)) {
-            return
-        }
-
-        dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
-        const { closest } = getCoordinates(e);
-        const existingNode = Object.values(state.nodes).find(
-            (node) => node.x === closest.x && node.y === closest.y
-        );
-
-        if (existingNode) {
-            dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
-        } else {
-            const newNodeId = getNextPointName(Object.keys(state.nodes));
-            dispatch({
-                type: 'UPSERT_NODE',
-                node: { id: newNodeId, x: closest.x, y: closest.y },
-            });
-            dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
-        }
-    };
-
-    const handleMouseMove = (e: InteractionEvent) => {
-        if (!isActionWIthinCanvas(e)) {
-            return
-        }
 
 
+    const canvasRef = React.useRef<HTMLDivElement>(null);
 
-        if (state.isDragging) {
+    useEffect(() => {
+        const canvas = canvasRef.current;
 
-            const { closest, relative } = getCoordinates(e);
-            const existingNode = Object.values(state.nodes).find(
-                (node) => node.x === closest.x && node.y === closest.y
-            );
+        if (!canvas) return;
 
-            if (state.activeNode) {
-                // Update the coordinates of the active node
-                dispatch({
-                    type: 'UPDATE_ACTIVE_NODE',
-                    node: existingNode ? closest : relative
-                });
-            } else if (state.startNodeId) {
-                const finalNode = existingNode && existingNode?.id !== state.startNodeId ? existingNode : {
-                    id: getNextPointName(Object.keys(state.nodes)),
-                    ...relative
-                }
-                dispatch({ type: 'UPDATE_ACTIVE_NODE', node: finalNode });
-                dispatch({
-                    type: 'ADD_LINK',
-                    link: {
-                        id: `link-${Date.now()}`,
-                        startNodeId: state.startNodeId,
-                        endNodeId: finalNode.id,
-                    },
-                });
-                dispatch({ type: 'SET_START_NODE', nodeId: null });
+        const handleMouseDown = (e: InteractionEvent) => {
+
+            // Check line tool is selected and the mouse click is within the canvas
+            if (currentTool !== TOOLS.LINE || !isActionWIthinCanvas(e)) {
+                return;
             }
-        }
-    };
 
-    const handleMouseUp = (e: InteractionEvent) => {
-        dispatch({ type: 'SET_IS_DRAGGING', isDragging: false });
+            dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
 
-        if (!isActionWIthinCanvas(e)) {
-
-            dispatch({ type: "REMOVE_ACTIVE_NODE_LINK" });
-
-            return
-        }
-
-
-
-        if (state.activeNode) {
             const { closest } = getCoordinates(e);
             const existingNode = Object.values(state.nodes).find(
                 (node) => node.x === closest.x && node.y === closest.y
             );
-            if (existingNode) {
-                if (state.activeNode.id !== existingNode.id)
-                    dispatch({ type: "MERGE_POINTS", from: state.activeNode.id, to: existingNode.id })
 
+            if (existingNode) {
+                dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
             } else {
-                dispatch({ type: "UPSERT_NODE", node: { ...state.activeNode, ...closest } })
+                const newNodeId = getNextPointName(Object.keys(state.nodes));
+                dispatch({
+                    type: 'UPSERT_NODE',
+                    node: { id: newNodeId, x: closest.x, y: closest.y },
+                });
+                dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
+            }
+        };
+
+        const handleMouseMove = (e: InteractionEvent) => {
+
+            if (!isActionWIthinCanvas(e)) {
+                return
             }
 
+            if (state.isDragging) {
+                const { closest, relative } = getCoordinates(e);
+                const existingNode = Object.values(state.nodes).find(
+                    (node) => node.x === closest.x && node.y === closest.y
+                );
 
-        }
-        dispatch({ type: "REMOVE_ACTIVE_NODE" });
+                if (state.activeNode) {
+                    // Update the coordinates of the active node
+                    dispatch({
+                        type: 'UPDATE_ACTIVE_NODE',
+                        node: existingNode ? closest : relative
+                    });
+                } else if (state.startNodeId) {
+                    const finalNode = existingNode && existingNode?.id !== state.startNodeId ? existingNode : {
+                        id: getNextPointName(Object.keys(state.nodes)),
+                        ...relative
+                    }
+                    dispatch({ type: 'UPDATE_ACTIVE_NODE', node: finalNode });
+                    dispatch({
+                        type: 'ADD_LINK',
+                        link: {
+                            id: `link-${Date.now()}`,
+                            startNodeId: state.startNodeId,
+                            endNodeId: finalNode.id,
+                        },
+                    });
+                    dispatch({ type: 'SET_START_NODE', nodeId: null });
+                }
+            }
+        };
+
+        const handleMouseUp = (e: InteractionEvent) => {
+
+            dispatch({ type: 'SET_IS_DRAGGING', isDragging: false });
+
+            if (!isActionWIthinCanvas(e)) {
+                dispatch({ type: "REMOVE_ACTIVE_NODE_LINK" });
+                return
+            }
+
+            if (state.activeNode) {
+                const { closest } = getCoordinates(e);
+                const existingNode = Object.values(state.nodes).find(
+                    (node) => node.x === closest.x && node.y === closest.y
+                );
+                if (existingNode) {
+                    if (state.activeNode.id !== existingNode.id)
+                        dispatch({ type: "MERGE_POINTS", from: state.activeNode.id, to: existingNode.id })
+                } else {
+                    dispatch({ type: "UPSERT_NODE", node: { ...state.activeNode, ...closest } })
+                }
+            }
+            dispatch({ type: "REMOVE_ACTIVE_NODE" });
+        };
+
+        canvas.addEventListener('mousedown', handleMouseDown, { passive: false });
+        canvas.addEventListener('mousemove', handleMouseMove, { passive: false });
+        canvas.addEventListener('mouseup', handleMouseUp, { passive: false });
+        canvas.addEventListener('touchstart', handleMouseDown, { passive: false });
+        canvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+        canvas.addEventListener('touchend', handleMouseUp, { passive: false });
+
+        return () => {
+            canvas.removeEventListener('mousedown', handleMouseDown);
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('mouseup', handleMouseUp);
+            canvas.removeEventListener('touchstart', handleMouseDown);
+            canvas.removeEventListener('touchmove', handleMouseMove);
+            canvas.removeEventListener('touchend', handleMouseUp);
+        };
+    }, [currentTool, state.activeNode, state.isDragging, state.links, state.nodes, state.startNodeId]);
 
 
-    };
-
-    console.log(state.links)
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
     return (
         <div className="flex justify-center flex-col items-center"
-            onClick={() => {
-                setCurrentTool("")
-            }}
-            onTouchStart={() => {
-                console.log("Hi")
-                setCurrentTool("")
-            }}>
-            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] touch-none'
-                onClick={(e) => {
-                    e.stopPropagation()
-                }}
-                onTouchStart={(e) => {
-                    e.stopPropagation()
-                }}>
-                <div
-                    className={`relative border border-gray-300 flex-grow select-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onTouchStart={handleMouseDown}
-                    onTouchMove={handleMouseMove}
-                    onTouchEndCapture={handleMouseUp}
 
+        >
+            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] '
+
+
+            >
+                <div
+                    ref={canvasRef}
+                    className={`relative border border-gray-300 flex-grow select-none  touch-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
+                    onContextMenu={(e) => {
+                        e.preventDefault()
+                    }}
+                    {...{ passive: false }}
                     style={{
                         backgroundImage:
                             `radial-gradient(#D9D9D9 ${GRID_POINT_RADIUS * 2}px, white 1px, white)`,

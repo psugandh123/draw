@@ -48,7 +48,6 @@ export const getCoordinates = (e: InteractionEvent) => {
 
     const x = clientX - canvasRect.left;
     const y = clientY - canvasRect.top;
-    console.log(x, x / GRID_LENGTH - 0.5, Math.round((x / GRID_LENGTH - 0.5)))
 
     return {
         relative: {
