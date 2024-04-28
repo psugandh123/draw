@@ -1,3 +1,4 @@
+import { Link } from "./Canvas";
 import { GRID_LENGTH } from "./constants";
 
 export const getNextPointName = (usedChars: string[]): string => {
@@ -15,6 +16,23 @@ export const getNextPointName = (usedChars: string[]): string => {
             nextCharCode = startChar;
         }
     }
+};
+
+export const removeDuplicateLinks = (links: Link[]): Link[] => {
+    const uniqueLinks = new Set<string>();
+    const result: Link[] = [];
+
+    for (const link of links) {
+        const key = `${link.startNodeId}-${link.endNodeId}`;
+        const reverseKey = `${link.endNodeId}-${link.startNodeId}`;
+
+        if (!uniqueLinks.has(key) && !uniqueLinks.has(reverseKey)) {
+            uniqueLinks.add(key);
+            result.push(link);
+        }
+    }
+
+    return result;
 };
 export type InteractionEvent = React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>;
 

@@ -5,7 +5,7 @@ import { GRID_LENGTH, GRID_POINT_RADIUS, TOOLS } from './constants';
 import Line from './Line';
 import Point from './Point';
 import Toolpanel from './Toolpanel';
-import { getCoordinates, getNextPointName, InteractionEvent, isActionWIthinCanvas } from './utils';
+import { getCoordinates, getNextPointName, InteractionEvent, isActionWIthinCanvas, removeDuplicateLinks } from './utils';
 
 export interface Node {
     id: string;
@@ -62,7 +62,7 @@ const reducer = (state: State, action: Action): State => {
                 (link => link.startNodeId !== link.endNodeId)
             return {
                 ...state,
-                links,
+                links: removeDuplicateLinks(links),
                 nodes: newNodes,
                 activeNode: null
             };
@@ -211,12 +211,21 @@ const Canvas: React.FC = () => {
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
     return (
-        <div className="flex justify-center flex-col items-center" onClick={() => {
-            setCurrentTool("")
-        }}>
-            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] touch-none' onClick={(e) => {
-                e.stopPropagation()
+        <div className="flex justify-center flex-col items-center"
+            onClick={() => {
+                setCurrentTool("")
+            }}
+            onTouchStart={() => {
+                console.log("Hi")
+                setCurrentTool("")
             }}>
+            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] touch-none'
+                onClick={(e) => {
+                    e.stopPropagation()
+                }}
+                onTouchStart={(e) => {
+                    e.stopPropagation()
+                }}>
                 <div
                     className={`relative border border-gray-300 flex-grow select-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
                     onMouseDown={handleMouseDown}

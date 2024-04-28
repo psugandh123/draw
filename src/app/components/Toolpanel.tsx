@@ -6,9 +6,14 @@ interface ToolpanelProps {
 }
 
 const Toolpanel = ({ setCurrentTool, currentTool }: ToolpanelProps) => {
-    return <div className="w-full bg-[#FCF6D7] rounded p-4  shadow">
+    return <div className="w-full bg-[#FCF6D7] rounded p-4  shadow"
+        onClick={(e) => {
+            e.stopPropagation()
+            setCurrentTool("")
+        }}>
         <div className={`${currentTool === TOOLS.LINE ? "bg-yellow-300" : ""} px-2 h-10 w-10 inline-flex items-center relative cursor-pointer `}
-            onClick={() => {
+            onClick={(e) => {
+                e.stopPropagation()
                 setCurrentTool(TOOLS.LINE)
             }}>
             <div className={` h-0.5 w-full relative flex items-center bg-gray-500`} >
