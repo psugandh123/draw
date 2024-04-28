@@ -25,7 +25,7 @@ const Line = ({ startNode, endNode, id }: LineProps) => {
     >
         <div className="group  w-full flex  justify-center items-end h-12 ">
             {length > 0 ?
-                <div className="pt-1 group-hover:opacity-100 opacity-0 transition-opacity text-sm"
+                <div className="pt-1 transition-opacity text-sm"
                     style={{
                         transform: angleInDegree > 90 || angleInDegree < -90 ? `rotate(${180}deg)` : "",
                         transformOrigin: "50% 0%"

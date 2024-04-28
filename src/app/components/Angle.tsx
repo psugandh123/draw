@@ -40,9 +40,9 @@ const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
     const isReflex = percentageAngle > 50;
     const rotationAngle = 90 + (isReflex ? (largeAngleInDegree + 360 - angleInDegree) : largeAngleInDegree);
 
-    // if (angleInDegreeRounded % 30 !== 0 && angleInDegreeRounded % 45 !== 0) {
-    //     return null;
-    // }
+    if (angleInDegreeRounded % 30 !== 0 && angleInDegreeRounded % 45 !== 0) {
+        return null;
+    }
 
 
     return <div className='group absolute' style={{
@@ -50,7 +50,7 @@ const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
         top: 0 - ANGLE_RADIUS + GRID_POINT_RADIUS * 4,
     }} >
         <div
-            className='opacity-0 group-hover:opacity-100'
+            className=''
             style={{
                 transform: `rotate(${rotationAngle}deg) scaleX(-1)`,
 
