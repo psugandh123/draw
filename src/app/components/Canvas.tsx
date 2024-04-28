@@ -198,7 +198,7 @@ const Canvas: React.FC = () => {
         <div className="flex justify-center flex-col items-center" onClick={() => {
             setCurrentTool("")
         }}>
-            <div className='w-[800px] space-y-4' onClick={(e) => {
+            <div className='w-full space-y-4 max-w-[400px]' onClick={(e) => {
                 e.stopPropagation()
             }}>
                 <div
