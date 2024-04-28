@@ -40,10 +40,9 @@ const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
     const isReflex = percentageAngle > 50;
     const rotationAngle = 90 + (isReflex ? (largeAngleInDegree + 360 - angleInDegree) : largeAngleInDegree);
 
-    if (angleInDegreeRounded % 30 !== 0 && angleInDegreeRounded % 45 !== 0) {
+    if (angleInDegreeRounded === 0 || (angleInDegreeRounded % 30 !== 0 && angleInDegreeRounded % 45 !== 0)) {
         return null;
     }
-
 
     return <div className='group absolute' style={{
         left: 0 - ANGLE_RADIUS + GRID_POINT_RADIUS * 4,
@@ -65,7 +64,7 @@ const Angle = ({ linkA, linkB, nodes, currentNode }: AngleProps) => {
                 size={ANGLE_RADIUS * 2}
 
             />
-            <div className='absolute -top-1/2 left-2/3  text-xs' style={{
+            <div className='absolute -top-1/2 left-2/3  text-gray-700 text-xs' style={{
                 transform: `rotate(${rotationAngle}deg) scaleX(-1)`,
 
             }}>{isReflex ? 360 - angleInDegreeRounded : angleInDegreeRounded}°</div>

@@ -1,16 +1,19 @@
 import { GRID_LENGTH } from "./constants";
 
-export const getNextPointName = (numPoints: number): string => {
+export const getNextPointName = (usedChars: string[]): string => {
     const startChar = 'A'.charCodeAt(0);
-    const nextCharCode = startChar + numPoints;
+    let nextCharCode = startChar;
 
-    if (nextCharCode <= 'Z'.charCodeAt(0)) {
-        return String.fromCharCode(nextCharCode);
-    } else {
-        // Handle the case when we've exceeded 'Z'
-        const overflow = nextCharCode - 'Z'.charCodeAt(0) - 1;
-        const nextChar = String.fromCharCode(startChar + overflow);
-        return `${nextChar}'`;
+    while (true) {
+        const nextChar = String.fromCharCode(nextCharCode);
+        if (!usedChars.includes(nextChar)) {
+            return nextChar;
+        }
+
+        nextCharCode++;
+        if (nextCharCode > 'Z'.charCodeAt(0)) {
+            nextCharCode = startChar;
+        }
     }
 };
 export type InteractionEvent = React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>;

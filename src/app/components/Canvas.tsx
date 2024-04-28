@@ -1,3 +1,4 @@
+import { link } from 'fs';
 import React, { useReducer, useState } from 'react';
 import Angle from './Angle';
 import { GRID_LENGTH, GRID_POINT_RADIUS, TOOLS } from './constants';
@@ -57,7 +58,7 @@ const reducer = (state: State, action: Action): State => {
                 links: state.links?.filter
                     (link =>
                         !((link.startNodeId === action.from && link.endNodeId === action.to) ||
-                            (link.startNodeId === action.to && link.endNodeId === action.from)))
+                            (link.startNodeId === action.to && link.endNodeId === action.from)) && link.startNodeId !== link.endNodeId)
                     .map(link => ({
                         ...link,
                         startNodeId: link.startNodeId === action.from ? action.to : link.startNodeId,
@@ -127,7 +128,7 @@ const Canvas: React.FC = () => {
         if (existingNode) {
             dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
         } else {
-            const newNodeId = getNextPointName(Object.values(state.nodes).length);
+            const newNodeId = getNextPointName(Object.keys(state.nodes));
             dispatch({
                 type: 'UPSERT_NODE',
                 node: { id: newNodeId, x: closest.x, y: closest.y },
@@ -158,7 +159,7 @@ const Canvas: React.FC = () => {
                 });
             } else if (state.startNodeId) {
                 const finalNode = existingNode && existingNode?.id !== state.startNodeId ? existingNode : {
-                    id: getNextPointName(Object.values(state.nodes).length),
+                    id: getNextPointName(Object.keys(state.nodes)),
                     ...relative
                 }
                 dispatch({ type: 'UPDATE_ACTIVE_NODE', node: finalNode });
@@ -208,7 +209,6 @@ const Canvas: React.FC = () => {
     };
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
-    console.log(state.nodes)
     return (
         <div className="flex justify-center flex-col items-center" onClick={() => {
             setCurrentTool("")
@@ -233,9 +233,10 @@ const Canvas: React.FC = () => {
                     }}
                 >
 
-                    {!state.isDragging && Object.values(finalNodes).map((node) => {
+                    {Object.values(finalNodes).map((node) => {
                         const associatedLinks = state.links.filter(link => link.startNodeId === node.id || link.endNodeId === node.id)
                         return <Point
+                            isDragging={state.isDragging}
                             key={node.id}
                             node={node} >
                             {associatedLinks.length > 1 ?
@@ -250,6 +251,7 @@ const Canvas: React.FC = () => {
 
                     {state.links.map((link) => (
                         <Line
+                            isDragging={state.isDragging}
                             key={link.id}
                             id={link.id}
                             startNode={finalNodes[link.startNodeId]}
