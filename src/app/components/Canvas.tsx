@@ -118,7 +118,6 @@ const Canvas: React.FC = () => {
         if (!canvas) return;
 
         const handleMouseDown = (e: InteractionEvent) => {
-            console.log("In")
             if (!isActionWIthinCanvas(e)) {
                 return;
             }
@@ -149,7 +148,6 @@ const Canvas: React.FC = () => {
         };
 
         const handleMouseMove = (e: InteractionEvent) => {
-            console.log("Move")
 
             if (!isActionWIthinCanvas(e)) {
                 return
