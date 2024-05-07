@@ -119,27 +119,32 @@ const Canvas: React.FC = () => {
 
         const handleMouseDown = (e: InteractionEvent) => {
 
-            // Check line tool is selected and the mouse click is within the canvas
-            if (currentTool !== TOOLS.LINE || !isActionWIthinCanvas(e)) {
+            if (!isActionWIthinCanvas(e)) {
                 return;
             }
-
-            dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
 
             const { closest } = getCoordinates(e);
             const existingNode = Object.values(state.nodes).find(
                 (node) => node.x === closest.x && node.y === closest.y
             );
 
-            if (existingNode) {
+            if (existingNode && currentTool === TOOLS.MOVE) {
+                dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
                 dispatch({ type: 'UPDATE_ACTIVE_NODE', node: existingNode });
-            } else {
-                const newNodeId = getNextPointName(Object.keys(state.nodes));
-                dispatch({
-                    type: 'UPSERT_NODE',
-                    node: { id: newNodeId, x: closest.x, y: closest.y },
-                });
-                dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
+            } else if (currentTool === TOOLS.LINE) {
+                dispatch({ type: 'SET_IS_DRAGGING', isDragging: true });
+
+                if (existingNode) {
+
+                    dispatch({ type: 'SET_START_NODE', nodeId: existingNode.id });
+                } else {
+                    const newNodeId = getNextPointName(Object.keys(state.nodes));
+                    dispatch({
+                        type: 'UPSERT_NODE',
+                        node: { id: newNodeId, x: closest.x, y: closest.y },
+                    });
+                    dispatch({ type: 'SET_START_NODE', nodeId: newNodeId });
+                }
             }
         };
 
@@ -220,21 +225,24 @@ const Canvas: React.FC = () => {
             canvas.removeEventListener('touchend', handleMouseUp);
         };
     }, [currentTool, state.activeNode, state.isDragging, state.links, state.nodes, state.startNodeId]);
-
-
+    console.log(state)
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
     return (
         <div className="flex justify-center flex-col items-center"
+            onClick={() => {
+                setCurrentTool(undefined)
+            }}
 
         >
-            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px] '
-
-
-            >
+            <div className='w-full gap-4 flex flex-col h-[100vh] py-20 max-w-[400px]  '>
                 <div
                     ref={canvasRef}
-                    className={`relative border border-gray-300 flex-grow select-none  touch-none ${currentTool === TOOLS.LINE ? "cursor-move" : ""}`}
+                    onClick={(e) => {
+                        e.stopPropagation()
+                    }}
+
+                    className={`relative border border-gray-300 flex-grow select-none  touch-none ${currentTool === TOOLS.LINE ? "cursor-crosshair" : ""}`}
                     onContextMenu={(e) => {
                         e.preventDefault()
                     }}
@@ -250,10 +258,11 @@ const Canvas: React.FC = () => {
                     {Object.values(finalNodes).map((node) => {
                         const associatedLinks = state.links.filter(link => link.startNodeId === node.id || link.endNodeId === node.id)
                         return <Point
+                            currentTool={currentTool}
 
                             key={node.id}
                             node={node} >
-                            {associatedLinks.length > 1 ?
+                            {!state.isDragging && associatedLinks.length > 1 ?
                                 associatedLinks.map((linkA, index1) =>
                                     associatedLinks.map((linkB, index2) => index1 < index2 ?
                                         <Angle isDragging={state.isDragging} key={linkA?.id + linkB.id} linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />

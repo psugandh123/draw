@@ -24,9 +24,8 @@ const Angle = ({ linkA, linkB, nodes, currentNode, isDragging }: AngleProps) => 
     const [startNodeB, endNodeB] = linkB.startNodeId === currentNode.id ? [nodes[linkB.endNodeId], nodes[linkB.startNodeId]] : [nodes[linkB.startNodeId], nodes[linkB.endNodeId]]
 
 
-
-    const dx2 = startNodeB.x - endNodeB.x;
-    const dy2 = startNodeB.y - endNodeB.y;
+    const dx2 = startNodeB?.x - endNodeB.x;
+    const dy2 = startNodeB?.y - endNodeB.y;
     const angle2 = Math.atan2(dy2, dx2);
     const angle1 = Math.atan2(dy1, dx1)
 
@@ -41,9 +40,6 @@ const Angle = ({ linkA, linkB, nodes, currentNode, isDragging }: AngleProps) => 
     const isReflex = percentageAngle > 50;
     const rotationAngle = 90 + (isReflex ? (largeAngleInDegree + 360 - angleInDegree) : largeAngleInDegree);
 
-    if (angleInDegreeRounded === 0 || (angleInDegreeRounded % 30 !== 0 && angleInDegreeRounded % 45 !== 0)) {
-        return null;
-    }
 
     return <div className={`group absolute  ${isDragging ? "opacity-0" : "opacity-100"}`} style={{
         left: 0 - ANGLE_RADIUS + GRID_POINT_RADIUS * 4,
