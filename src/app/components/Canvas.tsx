@@ -118,7 +118,7 @@ const Canvas: React.FC = () => {
         if (!canvas) return;
 
         const handleMouseDown = (e: InteractionEvent) => {
-
+            console.log("In")
             if (!isActionWIthinCanvas(e)) {
                 return;
             }
@@ -149,11 +149,11 @@ const Canvas: React.FC = () => {
         };
 
         const handleMouseMove = (e: InteractionEvent) => {
+            console.log("Move")
 
             if (!isActionWIthinCanvas(e)) {
                 return
             }
-
             if (state.isDragging) {
                 const { closest, relative } = getCoordinates(e);
                 const existingNode = Object.values(state.nodes).find(
@@ -225,7 +225,6 @@ const Canvas: React.FC = () => {
             canvas.removeEventListener('touchend', handleMouseUp);
         };
     }, [currentTool, state.activeNode, state.isDragging, state.links, state.nodes, state.startNodeId]);
-    console.log(state)
 
     const finalNodes = { ...state.nodes, ...(state.activeNode && { [state.activeNode.id]: state.activeNode }) };
     return (
@@ -262,7 +261,7 @@ const Canvas: React.FC = () => {
 
                             key={node.id}
                             node={node} >
-                            {!state.isDragging && associatedLinks.length > 1 ?
+                            {associatedLinks.length > 1 ?
                                 associatedLinks.map((linkA, index1) =>
                                     associatedLinks.map((linkB, index2) => index1 < index2 ?
                                         <Angle isDragging={state.isDragging} key={linkA?.id + linkB.id} linkA={linkA} linkB={linkB} nodes={state.nodes} currentNode={node} />
